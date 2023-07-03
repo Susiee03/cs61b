@@ -41,9 +41,10 @@ public class Dog implements Serializable{ // TODO
      */
     public static Dog fromFile(String name) {
         // TODO (hint: look at the Utils file)
-        File fromDog = Utils.join(DOG_FOLDER, name);
-        Dog d = readObject(fromDog, Dog.class);
-        return d;
+       File fromDog = Utils.join(DOG_FOLDER, name);
+       Dog d = readObject(fromDog, Dog.class);
+       return d;
+
     }
 
     /**
