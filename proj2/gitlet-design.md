@@ -127,13 +127,23 @@ become the HEAD branch.
 if file in CWD is untracked in current branch and would be overwritten by checkout, "There is an untracked file in the way;
 delete it, or add and commit it first". 
 
-9. `branch(String branchName)` - creates a new pointer points to the current commit.
+9. `branch(String branchName)` - creates a new pointer points to the current commit. Other things doesn't change, only checkout command
+   change the HEAD pointer.
+
 10. `reset(String commitID)` - checks out file tracked by the given commit, and also
- remove the head pointer to the given commit. 
+    remove the head pointer to the given commit. Difference between checkout and reset can be seen below:
+
+![img_7.png](img_7.png)
+
+> Fail case:  No commit with the given id exists, "No commit with that given id exits."
+working file is untracked in the current branch and would be overwritten by the reset, print `There is an untracked file in the way; delete it, or add and commit it first.`
+* Try to reuse the code used in checkout failed case. Created the private helper method.
+
 11. `merge(String branch)` - the most complicated command in gitlet, only
 considered merge two branches into one. Try to use more helper functions for 
 debug, and created more tests after finish the method. 
-
+* First, using BFS to find the split commit.
+* Different from real git a lot. Only consider merging two branches.
 
 
 ### Class 3: Commit 
@@ -148,6 +158,8 @@ debug, and created more tests after finish the method.
 * `String second_parent` - the merge commit's second parent, default to be empty. 
 * `String sha1` - the commit id
 * `File commitFileName` - the actual commit file stored under the object directory
+* `Map<String,String> tracked` - stores blobs that are all tracked by each commit.
+
 
 #### Methods:
 
@@ -161,11 +173,12 @@ debug, and created more tests after finish the method.
 6. `getTracked()` - get the commit's tracked blobs
 7. `setTracked(Map<String,String> parentTracked)` - set the initial track equals to the parent commit (clone the parent commit tracked files)
 8. `addTracked(String blobFileName, String blobSha1)` - add more blob's tracked
-9. `untracked(String blobFileName)` 
-10. `getParent()`
-11. `getSecond_parent()`
-12. `getTimestamp()`
-13. `getMessage ()`
+9. `untracked(String blobFileName)` - untracked the blob in current commit, created for the rm command. Can use built in remove method.
+10. `getParent()` - get the parent of commit.
+11. `getSecond_parent()` - get the second parent of commit. Only a merged commit has the second parent.
+12. `getTimestamp()` - get metadata, timestamp. For showing the information when using log command.
+13. `getMessage ()` - get the commit message input by user.
+
 
 After the commit command, the .gitlet looks like:
 
@@ -214,7 +227,24 @@ the staging area looks like:
 
 ## Algorithms
 * BFS - implemented in merge method, for traversing the commit graph to find the split point.
+* Try to use helper method, to split a complex tasks into several small and simpler parts, for code
+  reuse and debug.
+* Consider the edge case, and put the edge case into testing file.
 
 
 ## Persistence
 * All command requires the file stages or new created object to be saved. 
+```
+.
+├── .gitlet
+│   ├── HEAD                      <==== a pointer stores a path to tell git where is the HEAD commit
+│   ├── objects
+│   │   ├── blob
+│   │   └── commits
+│   ├── refs
+│   │   ├── heads
+│   │   │   ├── master
+│   │   │   │   └── main          <==== store sha1 id
+│   │   │   └── other_branches    <==== avoid space in any pathes
+│   │   └── remote
+│   └── stages                    <==== same as index in git
