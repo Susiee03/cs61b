@@ -11,9 +11,17 @@ public class World {
   public World(long seed) {
     world = new TETile[WIDTH][HEIGHT];
     random = new Random(seed);
+    initializeWorld();
   }
 
+  private void initializeWorld() {
+
+  }
   public int getWidth() {
     return WIDTH;
+  }
+
+  public static void main(String[] args) {
+
   }
 }

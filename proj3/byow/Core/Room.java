@@ -18,6 +18,8 @@ public class Room {
   private int width;
   private int height;
   private static final int MAX_LENGTH = 10;
+  private static final int MINIMUM_ROOM = 7;
+  private List<Room> allRooms;
 
 
   /** Initialize the room. */
@@ -25,6 +27,7 @@ public class Room {
       this.bottomLeft = bottomLeft;
       this.width = width;
       this.height = height;
+      allRooms = new ArrayList<>();
       //this.upperRight = upperRight;
       //this.bottomRight = botttomRight;
       //this.upperLeft = upperLeft;
@@ -122,12 +125,26 @@ public class Room {
     }
   }
 
-  /** Generate rooms in world, and return all generated rooms. Make sure there is no overlap
+  /** Generate rooms in world, and add it in the all rooms array list. Make sure there is no overlap
    * between rooms.
    */
-  public List<Room> roomGenerator(TETile[][] world) {
-    List<Room> allRooms = new ArrayList<>();
+  public void roomGenerator(Random random, TETile[][] world) {
+    Room newRoom = generateRoom(random, world);
+    if (allRooms.isEmpty()) {
+      allRooms.add(newRoom);
+    }
 
+    //Check whether there is overlap, if it is overlapped with others in all Rooms, don't add it.
+    else {
+      while (allRooms.size() < MINIMUM_ROOM) {
+        for (Room room : allRooms) {
+          if (newRoom.isOverlapped(room)) {
+            return;
+          }
+          allRooms.add(newRoom);
+        }
+      }
+    }
   }
 
   /** Generate a room at a random position in world, it doesn't exceed the world edge. */
@@ -152,4 +169,7 @@ public class Room {
     Room generatedRoom = new Room(randomBottomLeft, width, height);
     return generatedRoom;
   }
+
+
+
 }

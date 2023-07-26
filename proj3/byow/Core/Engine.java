@@ -1,13 +1,29 @@
 package byow.Core;
 
+
+import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import byow.TileEngine.Tileset;
+import java.util.Random;
 
 public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
+
+    /** Initialize the world. */
+    private TETile[][] worldInitialize() {
+        TETile[][] world = new TETile[WIDTH][HEIGHT];
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
+                world[i][j] = Tileset.NOTHING;
+            }
+        }
+        return world;
+    }
+
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -45,6 +61,11 @@ public class Engine {
         //
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
+        System.out.println(input);
+        long seed = Long.parseLong(input.replaceAll("[^0-9]", ""));
+        Random random  = new Random(seed);
+        TETile[][] world = worldInitialize();
+        StringInputDevice in = new StringInputDevice(input);
 
         TETile[][] finalWorldFrame = null;
         return finalWorldFrame;
