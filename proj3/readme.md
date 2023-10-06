@@ -1,6 +1,7 @@
 # Build Your Own World #
 **A 2D tile-based game made for Josh Hug's CS61B at the University of California, Berkeley**
-**Website Link: https://sp21.datastructur.es/materials/proj/proj3/proj3 **
+
+* https://sp21.datastructur.es/materials/proj/proj3/proj3 
 
 Written in Java, our two-dimensional tile-based game finds itself
 well within the intersection of Nintendo's *Mario* and Namco's *Pac-Man*. The game supports basic movements using the *'W'*, *'A'*, *'S'*, and *'D'* keys
