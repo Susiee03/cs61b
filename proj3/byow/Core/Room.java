@@ -10,166 +10,145 @@ import java.util.Random;
  * has four position fields, representing room's upper left position, button left position, upper right
  * position and button right position respectively.
  */
-public class Room {
-//  private Position upperLeft;
-//  private Position upperRight;
-//  private Position bottomRight;
-  private Position bottomLeft;
-  private int width;
-  private int height;
-  private static final int MAX_LENGTH = 10;
-  private static final int MINIMUM_ROOM = 7;
-  private List<Room> allRooms;
+public class Room {    protected int width;
+  protected int height;
+  protected Position lowerLeft;
+  protected Position upperRight;
+  protected Position upperLeft;
+  protected Position lowerRight;
+  protected Position horizontalDoor;
+  protected Position verticalDoor;
+  protected Random random;
+  protected Position blockPosition;
 
+  protected static final int MIN_SIDE_LENGTH = 6;
+  protected static final int MAX_SIDE_LENGTH = 12;
 
-  /** Initialize the room. */
-  public Room(Position bottomLeft, int width, int height) {//Position upperRight, Position botttomRight, Position upperLeft, ) {
-      this.bottomLeft = bottomLeft;
-      this.width = width;
-      this.height = height;
-      allRooms = new ArrayList<>();
-      //this.upperRight = upperRight;
-      //this.bottomRight = botttomRight;
-      //this.upperLeft = upperLeft;
+  /**
+   * Creates a new Room object with a random width and height from the given seed.
+   * Uses these random widths and heights, along with a random starting Position in the lowerLeft
+   * in order to create a Room instance. In any case where the Room exceeds the dimensions of the
+   * screen, we will simply take the upperRight to have dimension of WIDTH and HEIGHT,
+   * respectively.
+   */
+  public Room(Random random) {
+    this.random = random;
+    this.width = randomSideLength();
+    this.height = randomSideLength();
+    this.lowerLeft = randomStartingPosition();
+    this.upperRight = getUpperRight(width, height, lowerLeft);
+    this.upperLeft = getUpperLeft(height, lowerLeft);
+    this.lowerRight = getLowerRight(width, lowerLeft);
+    this.horizontalDoor = getHorizontalDoor();
+    this.verticalDoor = getVerticalDoor();
+    this.blockPosition = new Position(verticalDoor.getX(), horizontalDoor.getY());
+  }
+
+  /** Returns a random side length (Integer) that is between the specified range. */
+  public int randomSideLength() {
+    return Math.max(1, random.nextInt(MAX_SIDE_LENGTH - MIN_SIDE_LENGTH) + MIN_SIDE_LENGTH);
+  }
+
+  /** Returns a random starting Position in the lower left corner of a Room. */
+  public Position randomStartingPosition() {
+    int lowerLeftX = random.nextInt(World.WIDTH);
+    int lowerLeftY = random.nextInt(World.STARTINGHEIGHT);
+    return new Position(lowerLeftX, lowerLeftY);
+  }
+
+  /**
+   * Returns the corresponding Upper Right Position of a room given its width, height and
+   * its corresponding lower left Position.
+   */
+  public Position getUpperRight(int inputWidth, int inputHeight, Position inputLowerLeft) {
+    int upperRightX = (inputLowerLeft.getX() + (inputWidth));
+    int upperRightY = (inputLowerLeft.getY() + (inputHeight));
+    if (upperRightX >= World.WIDTH - 1) {
+      upperRightX = World.WIDTH - 1;
+      this.width = upperRightX - inputLowerLeft.getX();
+    }
+    if (upperRightY >= World.STARTINGHEIGHT - 1) {
+      upperRightY = World.STARTINGHEIGHT - 1;
+      this.height = upperRightY - inputLowerLeft.getY();
+    }
+    return new Position(upperRightX, upperRightY);
 
   }
 
-  /** Get the upper left coordination of the room. */
-  public Position getUpperLeft() {
-    int yP = bottomLeft.getY() + height;
-    return new Position(bottomLeft.getX(), yP);
+  /** Returns the corresponding upper Left corner of a Room. */
+  public Position getUpperLeft(int inputHeight, Position inputLowerLeft) {
+    int upperLeftX = inputLowerLeft.getX();
+    int upperLeftY = inputLowerLeft.getY() + (inputHeight - 1);
+    return new Position(upperLeftX, upperLeftY);
+
   }
 
-  /** Get the bottom left coordination of the room. */
-  public Position getBottomLeft() {
-    return bottomLeft;
+  /** Returns the corresponding lower right corner of a Room. */
+  public Position getLowerRight(int inputWidth, Position inputLowerLeft) {
+    int lowerRightX = inputLowerLeft.getX() + (inputWidth - 1);
+    int lowerRightY = inputLowerLeft.getY();
+    return new Position(lowerRightX, lowerRightY);
   }
 
-  /** Get the upper right coordination of the room. */
-  public Position getUpperRight() {
-    int xP = bottomLeft.getX() + width;
-    int yP = bottomLeft.getY() + height;
-    return new Position (xP, yP);
+
+  /** Return a boolean describing whether a Position lies within the corners
+   * of a room. */
+  public boolean isInside(Position p) {
+    int llx = lowerLeft.getX();
+    int lly = lowerLeft.getY();
+    int urx = upperRight.getX();
+    int ury = upperRight.getY();
+
+    boolean inXBound = p.getX() >= llx && p.getX() <= urx;
+    boolean inYBound = p.getY() >= lly && p.getY() <= ury;
+
+    return inXBound && inYBound;
   }
 
-  /** Get the upper left coordination of the room. */
-  public Position getBottomRight() {
-    int xP = bottomLeft.getX() + width;
-    return new Position(xP, bottomLeft.getY());
-  }
+  /** Returns a boolean describing whether the input Room possesses no corners
+   * that lie within the corners of another Room but still overlaps. */
+  public boolean sideOverlap(Room r) {
+    int llx = lowerLeft.getX(); int lly = lowerLeft.getY();
+    int urx = upperRight.getX(); int ury = upperRight.getY();
 
-  /** Get the center position of the room. */
-/*  public double[] getCenter() {
-    double[] center = new double[2];
-    center[0] = (double)(upperLeft.getX() + upperRight.getX())/2;   //xMiddle
-    center[1] = (double) (bottomLeft.getY() + upperLeft.getY())/2;  //y middle
-    return center;
-  }
+    int newLLX = r.lowerLeft.getX(); int newLLY = r.lowerLeft.getY();
+    int newURX = r.upperRight.getX(); int newURY = r.upperRight.getY();
 
- */
-
-  /** Get the center distance between two rooms. */
-/*  public double getDistance(Room r) {
-    double[] center = getCenter();
-    double[] centerR = r.getCenter();
-    double width = center[0] - centerR[0];
-    double height = center[1] - centerR[1];
-    double result = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2));
-    return result;
-  }
-  */
-
-
-  /** Whether two rooms are overlapped. */
-  public boolean isOverlapped(Room r) {
-    Position rUpperLeft = r.getUpperLeft();
-    Position rLowerLeft = r.getBottomLeft();
-    Position rUpperRight = r.getUpperRight();
-    Position rLowerRight = r.getBottomRight();
-    return contains(rUpperRight) && contains(rLowerLeft) && contains(rUpperLeft) && contains(rLowerRight);
-  }
-
-  /** Check whether the point is inside the room. */
-  private boolean contains(Position p) {
-    Position uL = getUpperLeft();
-    Position bL = getBottomLeft();
-    Position uR = getUpperRight();
-    if (uL.getX() <= p.getX() && p.getX() <= uR.getX()) {
-      if (bL.getY() <= p.getY() && p.getY() <= uL.getY()) {
-        return true;
-      }
+    if (newLLX < llx && newURX > urx
+            && newLLY < ury && newLLY > lly
+            && newURY < ury && newURY > lly) {
+      return true;
+    }
+    if (newLLY < lly && newURY > ury
+            && newLLX < urx && newLLX > llx
+            && newURX < urx && newURX > llx) {
+      return true;
     }
     return false;
   }
 
-  /** Draw a single room in the world. */
-  public void drawRoom(TETile[][] world) {
-    int height = getUpperLeft().getY() - getBottomLeft().getY();
-    int width = getUpperRight().getX() - getUpperLeft().getX();
-
-    //print the wall of the room
-    for (int i = 0; i < width; i++) {
-      world[bottomLeft.getX() + i][bottomLeft.getY()] = Tileset.WALL;
-      world[getUpperLeft().getX() + i][getUpperLeft().getY()] = Tileset.WALL;
+  /** Returns the Position (horizontally facing) of the door. */
+  public Position getHorizontalDoor() {
+    int doorX;
+    if (upperRight.getX() < (World.WIDTH / 2)) {
+      doorX = upperRight.getX() - 1;
+    } else {
+      doorX = lowerLeft.getX();
     }
-    for (int j = 0; j < height; j++) {
-      world[bottomLeft.getX()][bottomLeft.getY() + j] = Tileset.WALL;
-      world[getBottomRight().getX()][getBottomRight().getY() + j] = Tileset.WALL;
-    }
-
-    //print the part inside room
-    for (int k = 1; k < width-1; k++) {
-      for (int l = 1; l < height-1; l++) {
-        world[bottomLeft.getX() + k][bottomLeft.getY() + l] = Tileset.TREE;
-      }
-    }
+    int doorY = lowerLeft.getY() + (height / 2) - 1;
+    return new Position(doorX, doorY);
   }
 
-  /** Generate rooms in world, and add it in the all rooms array list. Make sure there is no overlap
-   * between rooms.
-   */
-  public void roomGenerator(Random random, TETile[][] world) {
-    Room newRoom = generateRoom(random, world);
-    if (allRooms.isEmpty()) {
-      allRooms.add(newRoom);
+  /** Returns the Position (vertically facing) of the door. */
+  public Position getVerticalDoor() {
+    int doorY;
+    if (upperRight.getY() < (World.STARTINGHEIGHT / 2)) {
+      doorY = upperRight.getY() - 1;
+    } else {
+      doorY = lowerLeft.getY();
     }
-
-    //Check whether there is overlap, if it is overlapped with others in all Rooms, don't add it.
-    else {
-      while (allRooms.size() < MINIMUM_ROOM) {
-        for (Room room : allRooms) {
-          if (newRoom.isOverlapped(room)) {
-            return;
-          }
-          allRooms.add(newRoom);
-        }
-      }
-    }
+    int doorX = lowerLeft.getX() + (width / 2) - 1;
+    return new Position(doorX, doorY);
   }
-
-  /** Generate a room at a random position in world, it doesn't exceed the world edge. */
-  private Room generateRoom(Random random, TETile[][] world) {
-    int randomX =  random.nextInt(world.length);
-    int randomY = random.nextInt(world[0].length);
-    Position randomBottomLeft = new Position(randomX, randomY);
-    int width = random.nextInt(MAX_LENGTH);
-    int height = random.nextInt(MAX_LENGTH);
-
-    //Generated room doesn't out of edge
-    if (randomX + width >= world.length ) {
-      while (randomX + width >= world.length) {
-        width --;
-      }
-    }
-    if (randomY + height >= world[0].length) {
-      while (randomY + height >= world[0].length) {
-        height --;
-      }
-    }
-    Room generatedRoom = new Room(randomBottomLeft, width, height);
-    return generatedRoom;
-  }
-
-
 
 }
