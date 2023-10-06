@@ -1,21 +1,22 @@
 package byow.Core;
 
-import byow.TileEngine.TERenderer;
-import byow.TileEngine.TETile;
 
 /** This is the main entry point for the program. This class simply parses
  *  the command line inputs, and lets the byow.Core.Engine class take over
  *  in either keyboard or input string mode.
  */
 public class Main {
-    /** Draws the associated world of a World instance to the screen. */
     public static void main(String[] args) {
-        TERenderer ter = new TERenderer();
-        ter.initialize(World.WIDTH, World.HEIGHT);
-
-        World world = new World(66);
-        TETile[][] finalWorldFrame = world.createWorld();
-
-        ter.renderFrame(finalWorldFrame);
+        if (args.length > 1) {
+            System.out.println("Can only have one argument - the input string");
+            System.exit(0);
+        } else if (args.length == 1) {
+            Engine engine = new Engine();
+            engine.interactWithInputString(args[0]);
+            System.out.println(engine.toString());
+        } else {
+            Engine engine = new Engine();
+            engine.interactWithKeyboard();
+        }
     }
 }
